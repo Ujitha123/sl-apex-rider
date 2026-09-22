@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sale, SaleItem, BillMessage
+from .models import Sale, SaleItem, BillMessage, Estimate, EstimateItem
 
 class SaleItemInline(admin.TabularInline):
     model = SaleItem
@@ -17,5 +17,15 @@ class SaleAdmin(admin.ModelAdmin):
 
 @admin.register(BillMessage)
 class BillMessageAdmin(admin.ModelAdmin):
-    list_display = ('sale', 'phone', 'channel', 'status', 'created_at')
-    list_filter = ('channel', 'status')
+    list_display = ('sale', 'estimate', 'kind', 'phone', 'channel', 'status', 'created_at')
+    list_filter = ('kind', 'channel', 'status')
+
+class EstimateItemInline(admin.TabularInline):
+    model = EstimateItem
+    extra = 0
+
+@admin.register(Estimate)
+class EstimateAdmin(admin.ModelAdmin):
+    list_display = ('id', 'customer', 'motorcycle', 'status', 'total', 'created_at')
+    list_filter = ('status',)
+    inlines = [EstimateItemInline]

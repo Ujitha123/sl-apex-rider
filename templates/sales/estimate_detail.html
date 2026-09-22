@@ -1,0 +1,32 @@
+{% extends 'base.html' %}{% block title %}Estimate #{{ est.id }} — SL APEX RIDER{% endblock %}{% block content %}
+<div class="d-flex justify-content-between align-items-center hero no-print"><div><div class="kicker">Step 2 · Send before service → Step 3 · Alert after</div><h2>Estimate #{{ est.id }} <span class="badge {% if est.status == 'completed' %}badge-ok{% elif est.status == 'draft' %}badge-low{% else %}badge-warn{% endif %}">{{ est.status }}</span></h2></div><div class="d-flex gap-2"><a class="btn-ghost text-decoration-none" href="{% url 'estimate-list' %}">← Estimates</a><button class="btn-ghost" onclick="window.print()">Print</button></div></div>
+{% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+<div class="panel" id="billPaper">
+<div class="d-flex align-items-center gap-2 mb-2"><img src="/static/img/logo.svg" alt="SL Apex Rider logo" width="44" height="44"><div><b>SL APEX RIDER — PRE-SERVICE ESTIMATE #{{ est.id }}</b><br><span style="color:var(--muted)">Mihinthale · bill prepared BEFORE work starts</span></div></div><hr>
+<p><b>Customer:</b> {{ est.customer.name }} · <span class="num">{{ est.customer.phone }}</span>{% if est.motorcycle %}<br><b>Bike:</b> <span class="num">{{ est.motorcycle.plate_no }}</span> ({{ est.motorcycle.brand }} {{ est.motorcycle.model }}){% endif %}{% if est.service_note %}<br><b>Service:</b> {{ est.service_note }}{% endif %}</p>
+<table class="table-apex"><tr><th>Part / Service</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>
+{% for i in est.items.all %}<tr><td><b>{{ i.part.name }}</b><br><span style="color:var(--muted);font-size:.82rem">{{ i.part.part_number }}</span></td><td class="num">{{ i.qty }}</td><td class="num">Rs. {{ i.unit_price }}</td><td class="num">Rs. {% widthratio i.unit_price 1 i.qty %}</td></tr>{% endfor %}
+{% if est.labour_charge %}<tr><td><b>Labour{% if est.service_note %} — {{ est.service_note }}{% endif %}</b></td><td class="num">—</td><td class="num">Rs. {{ est.labour_charge }}</td><td class="num">Rs. {{ est.labour_charge }}</td></tr>{% endif %}
+<tr><td colspan="3"><b>ESTIMATED TOTAL</b></td><td class="num"><b>Rs. {{ est.total }}</b></td></tr></table>
+{% if est.sale %}<p><b>→ Converted to Sale #{{ est.sale.id }}</b> (<a href="{% url 'sale-bill' est.sale.id %}" style="color:var(--accent)">open final bill</a>)</p>{% endif %}
+</div>
+<div class="panel mt-3 no-print">
+<h4>Step 2 — Send estimate to phone <span class="num">{{ est.customer.phone }}</span></h4>
+<div class="d-flex gap-2 flex-wrap">
+<form method="post" action="{% url 'estimate-send' est.id %}">{% csrf_token %}<input type="hidden" name="channel" value="sms"><button class="btn-apex" type="submit">Send estimate SMS</button></form>
+<form method="post" action="{% url 'estimate-send' est.id %}">{% csrf_token %}<input type="hidden" name="channel" value="whatsapp"><button class="btn-ghost" type="submit">Send via WhatsApp</button></form>
+<a class="btn-ghost text-decoration-none" target="_blank" rel="noopener" href="{{ wa_link }}">Open WhatsApp directly</a>
+</div>
+<h4 class="mt-3">Step 3 — After approval & service</h4>
+<div class="d-flex gap-2 flex-wrap">
+{% if not est.sale %}<form method="post" action="{% url 'estimate-convert' est.id %}">{% csrf_token %}<button class="btn-apex" type="submit">Approve → create Sale (decrements stock)</button></form>{% endif %}
+<form method="post" action="{% url 'estimate-complete' est.id %}">{% csrf_token %}<input type="hidden" name="channel" value="sms"><button class="btn-ghost" type="submit">Service done → send completion ALERT SMS</button></form>
+<form method="post" action="{% url 'estimate-complete' est.id %}">{% csrf_token %}<input type="hidden" name="channel" value="whatsapp"><button class="btn-ghost" type="submit">Alert via WhatsApp</button></form>
+</div>
+<pre class="mt-3 p-3" style="background:#0f1417;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap">{{ bill_text }}</pre>
+<h4 class="mt-3">Message record</h4>
+<table class="table-apex"><tr><th>When</th><th>Kind</th><th>Channel</th><th>Phone</th><th>Status</th></tr>
+{% for m in est.messages.all %}<tr><td class="num">{{ m.created_at }}</td><td>{{ m.kind }}</td><td>{{ m.channel }}</td><td class="num">{{ m.phone }}</td><td>{{ m.status }}</td></tr>{% empty %}<tr><td colspan="5"><div class="empty">Nothing sent yet.</div></td></tr>{% endfor %}</table>
+</div>
+<style>@media print{.topbar,.no-print,footer,.skip{display:none!important}.wrap{max-width:100%}body{background:#fff;color:#000}#billPaper{box-shadow:none}}</style>
+{% endblock %}

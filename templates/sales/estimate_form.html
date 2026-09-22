@@ -1,0 +1,40 @@
+{% extends 'base.html' %}{% block title %}New estimate — SL APEX RIDER{% endblock %}{% block content %}
+<div class="hero"><div><div class="kicker">Step 1 · Prepare bill before service</div><h2>New estimate</h2><p style="color:var(--muted)">Tick parts + labour. No stock changes — stock decrements only when converted to a sale.</p></div><div><a class="btn-ghost text-decoration-none" href="{% url 'estimate-list' %}">← Estimates</a></div></div>
+{% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+<form method="post" id="estForm">{% csrf_token %}
+<div class="panel mb-3"><div class="row g-2">
+<div class="col-md-3"><label class="form-label">Customer</label><select name="customer" class="form-control" required>{% for c in customers %}<option value="{{ c.id }}">{{ c.name }} · {{ c.phone }}</option>{% endfor %}</select></div>
+<div class="col-md-3"><label class="form-label">Bike</label><select name="motorcycle" class="form-control"><option value="">— Walk-in parts only —</option>{% for b in bikes %}<option value="{{ b.id }}">{{ b.plate_no }} · {{ b.brand }} {{ b.model }}</option>{% endfor %}</select></div>
+<div class="col-md-3"><label class="form-label">Service (auto-ticks parts + labour)</label><select name="service" id="serviceSel" class="form-control"><option value="">— No service —</option>{% for s in services %}<option value="{{ s.id }}" data-labour="{{ s.labour_charge }}" data-parts="{% for p in s.parts.all %}{{ p.id }},{% endfor %}">{{ s.name }} · Rs. {{ s.labour_charge }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label">Labour Rs.</label><input type="number" name="labour" id="labourIn" value="0" min="0" step="0.01" class="form-control"></div>
+<div class="col-md-1"><label class="form-label">Category</label><select id="catFilter" class="form-control"><option value="">All</option>{% for c in categories %}<option>{{ c.name }}</option>{% endfor %}</select></div>
+</div>
+<div class="mt-2"><label class="form-label">Custom service note (if no catalog service)</label><input name="service_note" class="form-control" placeholder="e.g. Full service + chain replacement"></div></div>
+<div class="panel"><table class="table-apex" id="partsTable"><tr><th>✓</th><th>Part</th><th>Category</th><th>Price</th><th>Qty</th><th>Line</th></tr>
+{% for p in parts %}<tr data-cat="{{ p.category.name }}" data-price="{{ p.price }}">
+<td><input type="checkbox" name="tick_{{ p.id }}" value="1" class="tick" data-id="{{ p.id }}"></td>
+<td><b>{{ p.name }}</b><br><span class="num" style="color:var(--muted);font-size:.8rem">{{ p.part_number }} · stock {{ p.stock_qty }}</span> {% if p.negotiable %}<span class="badge badge-warn">Negotiable</span>{% endif %}</td>
+<td style="color:var(--muted)">{{ p.category.name }}</td>
+<td>{% if p.negotiable %}<input type="number" name="price_{{ p.id }}" value="{{ p.price }}" min="1" step="0.01" class="form-control price" style="max-width:130px">{% else %}<span class="num">Rs. {{ p.price }}</span><input type="hidden" name="price_{{ p.id }}" value="{{ p.price }}">{% endif %}</td>
+<td><input type="number" name="qty_{{ p.id }}" value="1" min="1" max="{{ p.stock_qty }}" class="form-control qty" style="max-width:90px"></td>
+<td class="num line">Rs. 0</td></tr>{% endfor %}
+</table>
+<div class="d-flex justify-content-between align-items-center mt-3"><span style="color:var(--muted)">Ticked: <b id="tickCount" class="num">0</b></span><h3 class="num">Estimated: Rs. <span id="grandTotal">0.00</span></h3></div>
+<button class="btn-apex mt-2" type="submit">Prepare estimate bill</button></div></form>
+<script>
+(function(){const rows=[...document.querySelectorAll('#partsTable tr[data-cat]')];
+const totalEl=document.getElementById('grandTotal'),countEl=document.getElementById('tickCount');
+const labourEl=document.getElementById('labourIn'),svc=document.getElementById('serviceSel'),cat=document.getElementById('catFilter');
+function calc(){let t=parseFloat(labourEl.value||0),n=0;
+rows.forEach(r=>{const on=r.querySelector('.tick').checked;const pEl=r.querySelector('.price');
+const price=pEl?parseFloat(pEl.value||0):parseFloat(r.dataset.price);const qty=parseInt(r.querySelector('.qty').value||0);
+if(on&&qty>0){r.querySelector('.line').textContent='Rs. '+(price*qty).toFixed(2);t+=price*qty;n++;}else{r.querySelector('.line').textContent='Rs. 0';}});
+totalEl.textContent=t.toFixed(2);countEl.textContent=n;}
+document.getElementById('estForm').addEventListener('input',calc);
+document.getElementById('estForm').addEventListener('change',calc);
+svc.addEventListener('change',()=>{const o=svc.selectedOptions[0];if(!o||!o.value)return;labourEl.value=o.dataset.labour||0;
+(o.dataset.parts||'').split(',').forEach(id=>{if(!id)return;const c=document.querySelector('.tick[data-id="'+id+'"]');if(c)c.checked=true;});calc();});
+cat.addEventListener('change',()=>{rows.forEach(r=>{r.style.display=(!cat.value||r.dataset.cat===cat.value)?'':'none';});});
+calc();})();
+</script>
+{% endblock %}

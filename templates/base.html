@@ -23,7 +23,8 @@
 <a href="/customers/" class="{% if '/customers' in request.path %}active{% endif %}">Customers</a>
 <a href="/bikes/" class="{% if '/bikes' in request.path %}active{% endif %}">Bikes</a>
 <a href="/parts/" class="{% if '/parts' in request.path %}active{% endif %}">Parts</a>
-<a href="/sales/" class="{% if '/sales' in request.path %}active{% endif %}">Sales</a>
+<a href="/sales/" class="{% if '/sales' in request.path and 'estimates' not in request.path %}active{% endif %}">Sales</a>
+<a href="/sales/estimates/" class="{% if 'estimates' in request.path %}active{% endif %}">Estimates</a>
 <a href="/service/" class="{% if '/service' in request.path and 'alerts' not in request.path %}active{% endif %}">Service</a>
 <a href="/service/alerts/" class="{% if 'alerts' in request.path %}active{% endif %}">Alerts</a>
 <span style="opacity:.7">{{ user.username }}</span>
