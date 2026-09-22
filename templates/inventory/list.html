@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<div class="hero"><div><div class="kicker">Week 9–10 · Inventory + compatibility</div><h2>Spare parts</h2></div><div><a class="btn-apex text-decoration-none" href="{% url 'part-add' %}">Add part</a></div></div>
+<div class="panel"><form method="get" class="row g-2 mb-3"><div class="col"><input name="q" class="form-control" placeholder="Search part..." value="{{ request.GET.q }}"></div><div class="col"><input name="bike" class="form-control" placeholder="Bike model e.g. FZ" value="{{ request.GET.bike }}"></div><div class="col"><button class="btn-ghost" type="submit">Filter</button></div></form>
+<table class="table-apex"><tr><th>Part No</th><th>Name</th><th>Compatible</th><th>Price</th><th>Stock</th></tr>
+{% for p in parts %}<tr><td class="num">{{ p.part_number }}</td><td><b>{{ p.name }}</b></td><td style="color:var(--muted)">{{ p.compatible_models }}</td><td class="num">Rs. {{ p.price }}</td><td>{% if p.is_low_stock %}<span class="badge badge-low num">{{ p.stock_qty }} low</span>{% else %}<span class="badge badge-ok num">{{ p.stock_qty }}</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="5"><div class="empty">No parts match. Try another model.</div></td></tr>{% endfor %}
+</table></div>{% endblock %}

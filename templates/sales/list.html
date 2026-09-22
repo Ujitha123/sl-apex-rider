@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<h3>Sales</h3><a class="btn btn-primary mb-2" href="{% url 'sale-add' %}">New Sale</a>
+<table class="table table-striped"><tr><th>ID</th><th>Customer</th><th>Date</th><th>Total</th></tr>
+{% for s in sales %}<tr><td>{{ s.id }}</td><td>{{ s.customer.name }}</td><td>{{ s.date }}</td><td>{{ s.total }}</td></tr>{% endfor %}
+</table>{% endblock %}

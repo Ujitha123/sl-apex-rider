@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<div class="hero"><div><div class="kicker">Week 7–8 · Customer management</div><h2>Customers</h2></div><div><a class="btn-apex text-decoration-none" href="{% url 'customer-add' %}">Add customer</a></div></div>
+<div class="panel"><table class="table-apex"><tr><th>Name</th><th>Phone</th><th>Email</th><th></th></tr>
+{% for c in customers %}<tr><td><b>{{ c.name }}</b></td><td class="num">{{ c.phone }}</td><td>{{ c.email }}</td><td><a href="{% url 'customer-edit' c.id %}" style="color:var(--accent)">Edit</a></td></tr>{% empty %}<tr><td colspan="4"><div class="empty">No customers yet — add your first.</div></td></tr>{% endfor %}
+</table></div>{% endblock %}

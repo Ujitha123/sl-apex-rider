@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<div class="hero"><div><div class="kicker">Week 7–8 · Bike profiles + smart lookup</div><h2>Motorcycles</h2></div><div><a class="btn-apex text-decoration-none" href="{% url 'bike-add' %}">Add bike</a></div></div>
+<div class="panel"><table class="table-apex"><tr><th>Plate</th><th>Brand / Model</th><th>Owner</th><th>Mileage</th></tr>
+{% for b in bikes %}<tr><td><a href="{% url 'bike-detail' b.id %}" style="color:var(--accent)"><b class="num">{{ b.plate_no }}</b></a></td><td>{{ b.brand }} {{ b.model }}</td><td>{{ b.customer.name }}</td><td class="num">{{ b.mileage }} km</td></tr>{% empty %}<tr><td colspan="4"><div class="empty">No bikes yet.</div></td></tr>{% endfor %}
+</table></div>{% endblock %}

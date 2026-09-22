@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<h3>Service History</h3><a class="btn btn-primary mb-2" href="{% url 'service-add' %}">Add Service</a>
+<table class="table table-striped"><tr><th>Bike</th><th>Mileage</th><th>Date</th><th>Desc</th><th>Next Due</th></tr>
+{% for s in services %}<tr><td>{{ s.motorcycle.plate_no }}</td><td>{{ s.mileage }}</td><td>{{ s.service_date }}</td><td>{{ s.description }}</td><td>{{ s.next_due_mileage }}</td></tr>{% endfor %}
+</table>{% endblock %}

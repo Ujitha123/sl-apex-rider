@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<h3>Predictive Maintenance Alerts</h3>
+<table class="table table-warning"><tr><th>Bike</th><th>Part</th><th>Due Km</th><th>Reason</th></tr>
+{% for a in alerts %}<tr><td>{{ a.motorcycle.plate_no }}</td><td>{{ a.predicted_part }}</td><td>{{ a.due_mileage }}</td><td>{{ a.reason }}</td></tr>{% empty %}<tr><td colspan="4">No alerts</td></tr>{% endfor %}
+</table>{% endblock %}

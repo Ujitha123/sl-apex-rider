@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block content %}
+<h3>New Sale (auto-decrements stock)</h3>
+<form method="post">{% csrf_token %}
+<label>Customer</label><select name="customer" class="form-control">{% for c in customers %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select>
+<table class="table mt-3"><tr><th>Part</th><th>Price</th><th>Stock</th><th>Qty</th></tr>
+{% for p in parts %}<tr><td>{{ p.name }}</td><td>{{ p.price }}</td><td>{{ p.stock_qty }}</td><td><input type="number" name="qty_{{ p.id }}" value="0" min="0" max="{{ p.stock_qty }}" class="form-control"></td></tr>{% endfor %}
+</table>
+<button class="btn btn-success" type="submit">Complete Sale</button></form>
+{% endblock %}

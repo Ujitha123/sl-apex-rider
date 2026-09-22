@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero stagger">
+<div>
+<div class="kicker">SL Apex Rider · Mihinthale workshop OS</div>
+<h1 style="font-size:clamp(2rem,4.5vw,3.4rem)">Parts in stock. Bikes on time. No guesswork.</h1>
+<p>Live inventory, compatibility lookup, and mileage-based service predictions for your shop floor — built for the B.Sc. Hons IS project MGT/2022/450.</p>
+<div class="d-flex gap-2 mt-2"><a class="btn-apex text-decoration-none" href="/bikes/">Check a bike</a><a class="btn-ghost text-decoration-none" href="/parts/?bike=FZ">Find parts</a></div>
+</div>
+<div class="panel"><h4>Stock health</h4><canvas id="stockChart" height="180"></canvas><div class="num mt-2" style="color:var(--muted);font-size:.85rem">{{ stock_ok }} healthy · {{ stock_low }} low</div></div>
+</section>
+
+<div class="grid-stats stagger">
+<div class="card"><h5>Customers</h5><h3 class="num">{{ customers }}</h3><div class="delta">records live</div></div>
+<div class="card"><h5>Bikes tracked</h5><h3 class="num">{{ bikes }}</h3><div class="delta">with mileage</div></div>
+<div class="card"><h5>Parts catalogued</h5><h3 class="num">{{ parts }}</h3><div class="delta">compatibility tagged</div></div>
+<div class="card"><h5>Sales total</h5><h3 class="num">Rs. {{ sales_total }}</h3><div class="delta">auto-decremented</div></div>
+</div>
+
+<div class="bento">
+<div class="panel">
+<h4>Predictive maintenance — due soon</h4>
+{% for a in alerts %}<div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--line)"><span><b>{{ a.motorcycle.plate_no }}</b> · {{ a.predicted_part }} <span class="num" style="color:var(--muted)">· due @ {{ a.due_mileage }}km</span></span><span class="badge badge-warn">Due</span></div>
+{% empty %}<div class="empty">All bikes up to date. Add mileage to generate predictions.</div>{% endfor %}
+<h4 class="mt-3">Recent sales</h4><canvas id="salesChart" height="110"></canvas>
+{% for s in recent_sales %}<div class="d-flex justify-content-between py-1"><span>{{ s.customer.name }}</span><span class="num">Rs. {{ s.total }}</span></div>{% empty %}<div class="empty">No sales yet — create your first sale.</div>{% endfor %}
+</div>
+<div class="panel">
+<h4>Low stock</h4>
+{% for p in low_stock %}<div class="d-flex justify-content-between py-1"><span>{{ p.name }}</span><span class="badge badge-low num">{{ p.stock_qty }} left</span></div>{% empty %}<div class="empty">All stocked. Minimum thresholds healthy.</div>{% endfor %}
+<div class="mt-3"><a class="btn-ghost text-decoration-none d-inline-block" href="/parts/">Manage inventory</a></div>
+</div>
+</div>
+
+<script>
+const sc=document.getElementById('stockChart');
+if(sc){new Chart(sc,{type:'doughnut',data:{labels:['Healthy','Low'],datasets:[{data:[{{ stock_ok }},{{ stock_low }}],backgroundColor:['#2f7d4f','#f5a524'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#9aa4ad'}}}}});}
+const sl=document.getElementById('salesChart');
+if(sl){new Chart(sl,{type:'bar',data:{labels:{{ sales_labels_json|safe }},datasets:[{label:'Rs.',data:{{ sales_values_json|safe }},backgroundColor:'#f5a524'}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9aa4ad'}},y:{ticks:{color:'#9aa4ad'}}}}});}
+</script>
+{% endblock %}
