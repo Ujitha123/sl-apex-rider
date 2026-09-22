@@ -151,6 +151,14 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
+# Send-to-mobile (SMS gateway — optional; WhatsApp deep links need no config)
+# Set these in .env when you buy an SMS bundle (e.g. Text.lk / Dialog):
+#   SMS_GATEWAY_URL=https://api.provider.lk/sms/send
+#   SMS_API_KEY=your-key-here
+SMS_GATEWAY_URL = os.environ.get('SMS_GATEWAY_URL', '')
+SMS_API_KEY = os.environ.get('SMS_API_KEY', '')
+SMS_SENDER_ID = os.environ.get('SMS_SENDER_ID', 'SLAPEX')
+
 # Map Django's message levels to Bootstrap 5 alert classes
 from django.contrib.messages import constants as message_constants
 MESSAGE_TAGS = {

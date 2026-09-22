@@ -1,0 +1,30 @@
+{% extends 'base.html' %}{% block title %}Bill #{{ sale.id }} — SL APEX RIDER{% endblock %}{% block content %}
+<div class="d-flex justify-content-between align-items-center hero no-print"><div><div class="kicker">Bill · parts + service</div><h2>Bill #{{ sale.id }}</h2></div><div class="d-flex gap-2"><a class="btn-ghost text-decoration-none" href="{% url 'sale-list' %}">← Sales</a><button class="btn-ghost" onclick="window.print()">Print bill</button></div></div>
+{% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+<div class="panel" id="billPaper">
+<div class="d-flex align-items-center gap-2 mb-2"><img src="/static/img/logo.svg" alt="SL Apex Rider logo" width="44" height="44"><div><b>SL APEX RIDER</b><br><span style="color:var(--muted)">Mihinthale · Smart parts & predictive service</span></div></div>
+<hr>
+<p><b>Customer:</b> {{ sale.customer.name }} · <span class="num">{{ sale.customer.phone }}</span><br><b>Date:</b> <span class="num">{{ sale.date }}</span>{% if sale.service_note %}<br><b>Service:</b> {{ sale.service_note }}{% endif %}</p>
+<table class="table-apex"><tr><th>Part / Service</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>
+{% for i in sale.items.all %}<tr><td><b>{{ i.part.name }}</b><br><span style="color:var(--muted);font-size:.82rem">{{ i.part.part_number }}</span></td><td class="num">{{ i.qty }}</td><td class="num">Rs. {{ i.unit_price }}</td><td class="num">Rs. {% widthratio i.unit_price 1 i.qty %}</td></tr>{% endfor %}
+{% if sale.labour_charge %}<tr><td><b>Labour{% if sale.service_note %} — {{ sale.service_note }}{% endif %}</b></td><td class="num">—</td><td class="num">Rs. {{ sale.labour_charge }}</td><td class="num">Rs. {{ sale.labour_charge }}</td></tr>{% endif %}
+<tr><td colspan="3"><b>TOTAL</b></td><td class="num"><b>Rs. {{ sale.total }}</b></td></tr></table>
+<p style="color:var(--muted)">Thank you! — SL APEX RIDER, Mihinthale</p>
+</div>
+<div class="panel mt-3 no-print">
+<h4>Send bill to customer mobile — <span class="num">{{ sale.customer.phone }}</span></h4>
+<p style="color:var(--muted)">Works for both parts buyers and service customers. WhatsApp opens with the bill pre-filled; every send is recorded below.</p>
+<div class="d-flex gap-2 flex-wrap">
+<form method="post" action="{% url 'sale-send' sale.id %}">{% csrf_token %}<input type="hidden" name="channel" value="whatsapp"><button class="btn-apex" type="submit">Send via WhatsApp</button></form>
+<form method="post" action="{% url 'sale-send' sale.id %}">{% csrf_token %}<input type="hidden" name="channel" value="sms"><button class="btn-ghost" type="submit">Send via SMS{% if not sms_configured %} (queues){% endif %}</button></form>
+<a class="btn-ghost text-decoration-none" target="_blank" rel="noopener" href="{{ wa_link }}">Open WhatsApp directly</a>
+<button class="btn-ghost" id="copyBill">Copy bill text</button>
+</div>
+<pre id="billText" class="mt-3 p-3" style="background:#0f1417;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap">{{ bill_text }}</pre>
+<h4 class="mt-3">Send record</h4>
+<table class="table-apex"><tr><th>When</th><th>Phone</th><th>Channel</th><th>Status</th></tr>
+{% for m in sale.bill_messages.all %}<tr><td class="num">{{ m.created_at }}</td><td class="num">{{ m.phone }}</td><td>{{ m.channel }}</td><td>{{ m.status }}</td></tr>{% empty %}<tr><td colspan="4"><div class="empty">Not sent yet — use a button above.</div></td></tr>{% endfor %}</table>
+</div>
+<script>document.getElementById('copyBill').addEventListener('click',()=>{navigator.clipboard.writeText(document.getElementById('billText').innerText).then(()=>alert('Bill text copied — paste into any messenger.'));});</script>
+<style>@media print{.topbar,.no-print,footer,.skip{display:none!important}.wrap{max-width:100%}body{background:#fff;color:#000}#billPaper{box-shadow:none}}</style>
+{% endblock %}

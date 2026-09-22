@@ -55,3 +55,55 @@ class SaleCreationTests(TestCase):
         self.client.logout()
         resp = self.client.get(reverse('sale-list'))
         self.assertEqual(resp.status_code, 302)
+
+
+class BillTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="staff", password="pass12345")
+        self.client.login(username="staff", password="pass12345")
+        self.cust = Customer.objects.create(name="Bill Guy", phone="0711111111")
+        self.part = SparePart.objects.create(
+            name="Horn", part_number="BILL-01",
+            compatible_models="Yamaha FZ", price="1100.00", stock_qty=5,
+        )
+
+    def _make_sale(self):
+        resp = self.client.post(reverse('sale-add'), {
+            'customer': self.cust.id,
+            f'tick_{self.part.id}': '1',
+            f'qty_{self.part.id}': 2,
+            'labour': '500',
+        })
+        self.assertEqual(resp.status_code, 302)
+        return Sale.objects.latest('id')
+
+    def test_bill_page_requires_login(self):
+        sale = self._make_sale()
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse('sale-bill', args=[sale.id])).status_code, 302)
+
+    def test_bill_page_shows_items_and_total(self):
+        sale = self._make_sale()
+        resp = self.client.get(reverse('sale-bill', args=[sale.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Horn')
+        self.assertContains(resp, 'Rs. 2700')
+
+    def test_whatsapp_send_logs_record(self):
+        from .models import BillMessage
+        sale = self._make_sale()
+        resp = self.client.post(reverse('sale-send', args=[sale.id]), {'channel': 'whatsapp'})
+        self.assertEqual(resp.status_code, 302)
+        msg = BillMessage.objects.latest('id')
+        self.assertEqual(msg.sale_id, sale.id)
+        self.assertEqual(msg.channel, 'whatsapp')
+        self.assertIn('TOTAL', msg.body)
+
+    def test_sms_send_queues_without_gateway(self):
+        from .models import BillMessage
+        sale = self._make_sale()
+        resp = self.client.post(reverse('sale-send', args=[sale.id]), {'channel': 'sms'})
+        self.assertEqual(resp.status_code, 302)
+        msg = BillMessage.objects.latest('id')
+        self.assertEqual(msg.channel, 'sms')
+        self.assertIn('queued', msg.status)

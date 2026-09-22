@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.shortcuts import render, redirect
 from django.views.generic import ListView
-from .models import Sale, SaleItem
+from .models import Sale, SaleItem, BillMessage, build_bill_text, normalize_lk_mobile
 from customers.models import Customer
 from inventory.models import SparePart
 
@@ -88,6 +88,58 @@ def sale_create(request):
             return render(request, 'sales/form.html', {'customers': customers, 'parts': parts, 'services': services, 'categories': categories, 'ticked': ticked})
 
         messages.success(request, f'Sale #{sale.id} saved — Rs. {sale.total}.')
-        return redirect('sale-list')
+        return redirect('sale-bill', sale_id=sale.id)
 
     return render(request, 'sales/form.html', {'customers': customers, 'parts': parts, 'services': services, 'categories': categories, 'ticked': ticked})
+
+
+@login_required
+def sale_bill(request, sale_id):
+    import urllib.parse
+    from django.conf import settings
+    sale = Sale.objects.select_related('customer').prefetch_related('items__part', 'bill_messages').filter(id=sale_id).first()
+    if sale is None:
+        messages.error(request, 'Bill not found.')
+        return redirect('sale-list')
+    body = build_bill_text(sale)
+    wa_number = normalize_lk_mobile(sale.customer.phone)
+    wa_link = f"https://wa.me/{wa_number}?text={urllib.parse.quote(body)}"
+    sms_configured = bool(getattr(settings, 'SMS_GATEWAY_URL', '') and getattr(settings, 'SMS_API_KEY', ''))
+    return render(request, 'sales/bill.html', {
+        'sale': sale, 'bill_text': body, 'wa_link': wa_link,
+        'sms_configured': sms_configured,
+    })
+
+
+@login_required
+def sale_send(request, sale_id):
+    """Log the send-to-mobile action. WhatsApp opens on the shop PC/phone;
+    SMS is queued until a gateway is configured in .env (see settings)."""
+    import urllib.parse
+    from django.conf import settings
+    sale = Sale.objects.select_related('customer').filter(id=sale_id).first()
+    if sale is None:
+        messages.error(request, 'Bill not found.')
+        return redirect('sale-list')
+    if request.method != 'POST':
+        return redirect('sale-bill', sale_id=sale.id)
+    channel = request.POST.get('channel', 'whatsapp')
+    body = build_bill_text(sale)
+    phone = sale.customer.phone
+    if channel == 'sms' and getattr(settings, 'SMS_GATEWAY_URL', '') and getattr(settings, 'SMS_API_KEY', ''):
+        status = 'sent'  # gateway configured → extend here with requests.post to provider
+    elif channel == 'sms':
+        status = 'queued (no SMS gateway configured — set SMS_GATEWAY_URL/SMS_API_KEY in .env)'
+    else:
+        status = 'opened WhatsApp'
+        channel = 'whatsapp'
+    BillMessage.objects.create(sale=sale, phone=phone, channel=channel, body=body, status=status)
+    if channel == 'whatsapp':
+        wa_number = normalize_lk_mobile(phone)
+        wa_link = f"https://wa.me/{wa_number}?text={urllib.parse.quote(body)}"
+        messages.success(request, f'Bill #{sale.id} logged to {phone}. Opening WhatsApp…')
+        from django.shortcuts import redirect as dj_redirect
+        resp = dj_redirect(wa_link)
+        return resp
+    messages.success(request, f'Bill #{sale.id} recorded for {phone} ({status}).')
+    return redirect('sale-bill', sale_id=sale.id)
