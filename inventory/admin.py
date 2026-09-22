@@ -7,6 +7,6 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(SparePart)
 class SparePartAdmin(admin.ModelAdmin):
-    list_display = ('name', 'part_number', 'price', 'stock_qty', 'min_stock')
+    list_display = ('name', 'part_number', 'category', 'price', 'negotiable', 'stock_qty', 'min_stock')
     search_fields = ('name', 'part_number', 'compatible_models')
-    list_filter = ('category',)
+    list_filter = ('category', 'negotiable')

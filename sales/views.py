@@ -20,20 +20,23 @@ class SaleList(LoginRequiredMixin, ListView):
 
 @login_required
 def sale_create(request):
+    from maintenance.models import ServiceType
+    from inventory.models import Category
     customers = Customer.objects.all()
-    parts = SparePart.objects.all()
+    parts = SparePart.objects.select_related('category').order_by('category__name', 'name')
+    services = ServiceType.objects.prefetch_related('parts').order_by('name')
+    categories = Category.objects.order_by('name')
+    ticked = [int(x) for x in request.GET.getlist('tick') if str(x).isdigit()]
 
     if request.method == 'POST':
         cid = request.POST.get('customer')
         customer = Customer.objects.filter(id=cid).first()
         if customer is None:
             messages.error(request, 'Please select a valid customer.')
-            return render(request, 'sales/form.html', {'customers': customers, 'parts': parts})
+            return render(request, 'sales/form.html', {'customers': customers, 'parts': parts, 'services': services, 'categories': categories, 'ticked': ticked})
 
         try:
             with transaction.atomic():
-                # Lock the part rows for this sale so two concurrent sales
-                # can't both pass the stock check and oversell the same part.
                 part_ids = [p.id for p in parts]
                 locked_parts = {
                     p.id: p for p in SparePart.objects.select_for_update().filter(id__in=part_ids)
@@ -42,26 +45,49 @@ def sale_create(request):
                 items_to_create = []
                 total = Decimal('0')
                 for part_id, part in locked_parts.items():
-                    qty = int(request.POST.get(f'qty_{part_id}', 0) or 0)
+                    if not request.POST.get(f'tick_{part_id}'):
+                        continue
+                    qty = int(request.POST.get(f'qty_{part_id}', 1) or 1)
                     if qty <= 0:
                         continue
                     if part.stock_qty < qty:
                         raise ValueError(f'Not enough stock for {part.name} (have {part.stock_qty}, need {qty}).')
-                    items_to_create.append((part, qty))
-                    total += part.price * qty
+                    raw_price = request.POST.get(f'price_{part_id}', '')
+                    try:
+                        unit_price = Decimal(raw_price) if raw_price else part.price
+                    except Exception:
+                        unit_price = part.price
+                    if unit_price <= 0:
+                        raise ValueError(f'Invalid price for {part.name}.')
+                    if unit_price != part.price and not part.negotiable:
+                        raise ValueError(f'{part.name} is fixed-price (Rs. {part.price}).')
+                    items_to_create.append((part, qty, unit_price))
+                    total += unit_price * qty
 
                 if not items_to_create:
-                    raise ValueError('Select at least one part with a quantity greater than zero.')
+                    raise ValueError('Tick at least one part and set quantity greater than zero.')
 
-                sale = Sale.objects.create(customer=customer, total=total)
-                for part, qty in items_to_create:
-                    SaleItem.objects.create(sale=sale, part=part, qty=qty, unit_price=part.price)
+                service = ServiceType.objects.filter(id=request.POST.get('service') or 0).first()
+                labour = Decimal(request.POST.get('labour') or (service.labour_charge if service else 0) or 0)
+                if labour < 0:
+                    raise ValueError('Invalid labour charge.')
+                if service and service.negotiable is False and labour != service.labour_charge:
+                    raise ValueError(f'{service.name} labour is fixed at Rs. {service.labour_charge}.')
+                total += labour
+
+                sale = Sale.objects.create(
+                    customer=customer, total=total, labour_charge=labour,
+                    service_note=service.name if service else request.POST.get('service_note', ''),
+                )
+                for part, qty, unit_price in items_to_create:
+                    SaleItem.objects.create(sale=sale, part=part, qty=qty, unit_price=unit_price)
                     part.stock_qty -= qty
                     part.save(update_fields=['stock_qty'])
         except ValueError as exc:
             messages.error(request, str(exc))
-            return render(request, 'sales/form.html', {'customers': customers, 'parts': parts})
+            return render(request, 'sales/form.html', {'customers': customers, 'parts': parts, 'services': services, 'categories': categories, 'ticked': ticked})
 
+        messages.success(request, f'Sale #{sale.id} saved — Rs. {sale.total}.')
         return redirect('sale-list')
 
-    return render(request, 'sales/form.html', {'customers': customers, 'parts': parts})
+    return render(request, 'sales/form.html', {'customers': customers, 'parts': parts, 'services': services, 'categories': categories, 'ticked': ticked})

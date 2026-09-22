@@ -22,6 +22,7 @@ class SaleCreationTests(TestCase):
     def test_sale_deducts_stock_and_sets_total(self):
         resp = self.client.post(reverse('sale-add'), {
             'customer': self.cust.id,
+            f'tick_{self.part.id}': '1',
             f'qty_{self.part.id}': 2,
         })
         self.assertEqual(resp.status_code, 302)
@@ -33,6 +34,7 @@ class SaleCreationTests(TestCase):
     def test_sale_rejects_quantity_over_stock(self):
         resp = self.client.post(reverse('sale-add'), {
             'customer': self.cust.id,
+            f'tick_{self.part.id}': '1',
             f'qty_{self.part.id}': 999,
         })
         self.assertEqual(resp.status_code, 200)  # re-renders form with error
@@ -43,6 +45,7 @@ class SaleCreationTests(TestCase):
     def test_sale_rejects_invalid_customer(self):
         resp = self.client.post(reverse('sale-add'), {
             'customer': 99999,
+            f'tick_{self.part.id}': '1',
             f'qty_{self.part.id}': 1,
         })
         self.assertEqual(resp.status_code, 200)

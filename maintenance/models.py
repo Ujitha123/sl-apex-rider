@@ -3,6 +3,18 @@ from customers.models import Customer
 from motorcycles.models import Motorcycle
 
 
+class ServiceType(models.Model):
+    """Service catalog (e.g. Full Service, Brake Service) linked to parts."""
+    name = models.CharField(max_length=150, unique=True)
+    description = models.TextField(blank=True)
+    labour_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    negotiable = models.BooleanField(default=False)
+    parts = models.ManyToManyField('inventory.SparePart', blank=True, related_name='services')
+
+    def __str__(self):
+        return f"{self.name} (Rs. {self.labour_charge})"
+
+
 class ServiceRecord(models.Model):
     motorcycle = models.ForeignKey(Motorcycle, on_delete=models.CASCADE, related_name='services')
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)

@@ -18,6 +18,7 @@ class SparePart(models.Model):
     stock_qty = models.PositiveIntegerField(default=0)
     min_stock = models.PositiveIntegerField(default=5)
     description = models.TextField(blank=True)
+    negotiable = models.BooleanField(default=False, help_text="Tick if price can be negotiated at sale time")
     service_interval_km = models.PositiveIntegerField(default=2500,
         help_text="Km interval for predictive maintenance, e.g. 2500 for engine oil")
 

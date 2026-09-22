@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import ServiceRecord, PredictiveAlert
+from .models import ServiceRecord, PredictiveAlert, ServiceType
+
+@admin.register(ServiceType)
+class ServiceTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'labour_charge', 'negotiable')
+    filter_horizontal = ('parts',)
 
 @admin.register(ServiceRecord)
 class ServiceAdmin(admin.ModelAdmin):
