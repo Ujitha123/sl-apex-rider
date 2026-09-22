@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}SL APEX RIDER — Smart Spare Parts & Predictive Maintenance{% endblock %}
+{% block content %}
+<section class="cover">
+  <div class="cover-art"><img src="/static/img/cover.svg" alt="SL Apex Rider cover — sprocket Apex A mark with racing apex line"></div>
+  <div class="cover-body stagger">
+    <div class="kicker">B.Sc. Hons IS · MGT/2022/450 · SL Apex Rider, Mihinthale</div>
+    <h1>Parts in stock.<br>Bikes on time.</h1>
+    <p>Customer records, motorcycle profiles, spare-parts inventory with compatibility lookup, sales that decrement stock, service history, and mileage-based predictive alerts — one workshop system.</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn-apex text-decoration-none" href="{% url 'login' %}">Sign in to dashboard</a>
+      <a class="btn-ghost text-decoration-none" href="/admin/">Admin</a>
+    </div>
+    <div class="cover-meta">
+      <div><span class="num">2500</span><small>km oil cycle</small></div>
+      <div><span class="num">500</span><small>km early warning</small></div>
+      <div><span class="num">22</span><small>automated tests</small></div>
+    </div>
+  </div>
+</section>
+<section class="cover-trio">
+  <div class="panel"><h4>Compatibility lookup</h4><p>Bike detail pages recommend parts whose compatible-models tag matches — e.g. FZ, CB150.</p></div>
+  <div class="panel"><h4>Mileage predictions</h4><p>Oil 2500 · filter 6000 · plug / brakes 8000 · chain 12000, alerted 500 km early.</p></div>
+  <div class="panel"><h4>Live dashboard</h4><p>Stock health doughnut, sales bar chart, low-stock and due-service panels.</p></div>
+</section>
+{% endblock %}

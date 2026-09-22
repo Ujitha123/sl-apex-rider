@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from customers.models import Customer
 from motorcycles.models import Motorcycle
 from inventory.models import SparePart
@@ -6,6 +7,13 @@ from sales.models import Sale
 from maintenance.models import PredictiveAlert
 from django.db.models import Sum
 
+def cover(request):
+    if request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('home')
+    return render(request, 'dashboard/cover.html')
+
+@login_required
 def home(request):
     import json
     stock_ok = SparePart.objects.filter(stock_qty__gt=5).count()

@@ -1,9 +1,10 @@
 from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView
 from django.urls import reverse_lazy
 from .models import SparePart
 
-class PartList(ListView):
+class PartList(LoginRequiredMixin, ListView):
     model = SparePart
     template_name = 'inventory/list.html'
     context_object_name = 'parts'
@@ -18,7 +19,7 @@ class PartList(ListView):
             qs = qs.filter(compatible_models__icontains=bike)
         return qs
 
-class PartCreate(CreateView):
+class PartCreate(LoginRequiredMixin, CreateView):
     model = SparePart
     fields = ['name', 'part_number', 'category', 'brand', 'compatible_models',
               'price', 'stock_qty', 'min_stock', 'description', 'service_interval_km']

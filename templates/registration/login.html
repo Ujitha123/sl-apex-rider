@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Sign in — SL APEX RIDER{% endblock %}
+{% block content %}
+<div class="login-grid">
+  <div class="login-art"><img src="/static/img/cover.svg" alt="SL Apex Rider brand artwork"></div>
+  <div class="panel">
+    <div class="d-flex align-items-center gap-2 mb-2"><img src="/static/img/logo.svg" alt="SL Apex Rider logo" width="40" height="40"><b>SL APEX RIDER</b></div>
+    <h1 class="h4 mb-3">Sign in</h1>
+    {% if form.errors %}
+      <div class="alert alert-danger">Incorrect username or password. Please try again.</div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label" for="id_username">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="id_password">Password</label>
+        {{ form.password }}
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

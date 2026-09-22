@@ -1,15 +1,16 @@
 from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView
 from django.urls import reverse_lazy
 from .models import ServiceRecord, PredictiveAlert
 
-class ServiceList(ListView):
+class ServiceList(LoginRequiredMixin, ListView):
     model = ServiceRecord
     template_name = 'maintenance/list.html'
     context_object_name = 'services'
     ordering = ['-service_date']
 
-class ServiceCreate(CreateView):
+class ServiceCreate(LoginRequiredMixin, CreateView):
     model = ServiceRecord
     fields = ['motorcycle', 'customer', 'mileage', 'description', 'parts_replaced',
               'next_due_mileage', 'next_due_date']
@@ -25,7 +26,7 @@ class ServiceCreate(CreateView):
             bike.save()
         return resp
 
-class AlertList(ListView):
+class AlertList(LoginRequiredMixin, ListView):
     model = PredictiveAlert
     template_name = 'maintenance/alerts.html'
     context_object_name = 'alerts'

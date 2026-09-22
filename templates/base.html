@@ -18,6 +18,7 @@
 <div class="wrap d-flex align-items-center justify-content-between" style="height:68px">
 <a class="brand" href="/"><img src="/static/img/logo.svg" alt="SL Apex Rider sprocket A logo"><span><b>SL APEX RIDER</b><small>Smart parts · Predictive service</small></span></a>
 <nav class="navlinks" aria-label="Primary">
+{% if user.is_authenticated %}
 <a href="/" class="{% if request.path == '/' %}active{% endif %}">Dashboard</a>
 <a href="/customers/" class="{% if '/customers' in request.path %}active{% endif %}">Customers</a>
 <a href="/bikes/" class="{% if '/bikes' in request.path %}active{% endif %}">Bikes</a>
@@ -25,10 +26,23 @@
 <a href="/sales/" class="{% if '/sales' in request.path %}active{% endif %}">Sales</a>
 <a href="/service/" class="{% if '/service' in request.path and 'alerts' not in request.path %}active{% endif %}">Service</a>
 <a href="/service/alerts/" class="{% if 'alerts' in request.path %}active{% endif %}">Alerts</a>
+<span style="opacity:.7">{{ user.username }}</span>
+<form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-link p-0" style="color:inherit">Logout</button></form>
+{% else %}
+<a href="/welcome/" class="{% if '/welcome' in request.path %}active{% endif %}">Cover</a>
+<a href="/accounts/login/" class="{% if '/accounts/login' in request.path %}active{% endif %}">Sign in</a>
+{% endif %}
 </nav>
 </div>
 </header>
 <main id="main" class="wrap" style="padding-bottom:1rem">
+{% if messages %}
+<div class="messages mt-3">
+{% for message in messages %}
+<div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+{% endfor %}
+</div>
+{% endif %}
 {% block content %}{% endblock %}
 <footer>SL APEX RIDER · Mihinthale · B.Sc. Hons IS MGT/2022/450 · <a href="/admin/" style="color:inherit">Admin</a></footer>
 </main>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="SL Apex Rider cover artwork">
+  <defs>
+    <radialGradient id="glow" cx="30%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#24343d"/><stop offset="60%" stop-color="#141a1f"/><stop offset="100%" stop-color="#0e1113"/>
+    </radialGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0H0v60" fill="none" stroke="#232c33" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <rect width="1600" height="900" fill="url(#grid)" opacity=".55"/>
+  <path d="M-50 720 C 400 640, 520 560, 760 520 S 1250 430, 1700 300" fill="none" stroke="#f5a524" stroke-width="10" stroke-linecap="round" opacity=".9"/>
+  <path d="M-50 760 C 400 680, 520 600, 760 560 S 1250 470, 1700 340" fill="none" stroke="#f2f4f3" stroke-width="3" stroke-dasharray="26 22" opacity=".5"/>
+  <g transform="translate(1120,180)">
+    <path d="M160 12 276 80v160L160 308 44 240V80Z" fill="#111417" stroke="#f5a524" stroke-width="7"/>
+    <g stroke="#f5a524" stroke-width="9" stroke-linecap="round">
+      <path d="M160 52v22M160 246v22M52 160h22M246 160h22M84 84l16 16M220 220l16 16M236 84l-16 16M100 220l-16 16"/>
+    </g>
+    <path d="M106 242 160 118l54 124h-32l-22-54-22 54Z" fill="#f5a524"/>
+    <path d="M134 202h52l-10-25h-32Z" fill="#111417"/>
+    <path d="M192 56 128 264" stroke="#f2f4f3" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g font-family="Outfit, Arial, sans-serif">
+    <text x="120" y="240" fill="#f5a524" font-size="34" letter-spacing="8">SL APEX RIDER · MIHINTHALE</text>
+    <text x="115" y="360" fill="#f2f4f3" font-size="104" font-weight="800">Parts in stock.</text>
+    <text x="115" y="470" fill="#f2f4f3" font-size="104" font-weight="800">Bikes on time.</text>
+    <text x="120" y="540" fill="#9aa4ad" font-size="34">Smart spare parts &amp; predictive maintenance — MGT/2022/450</text>
+  </g>
+  <g font-family="JetBrains Mono, monospace" font-size="26">
+    <rect x="120" y="620" width="300" height="64" rx="32" fill="#f5a524"/><text x="160" y="661" fill="#1a1204" font-weight="700">OIL · 2500 KM</text>
+    <rect x="440" y="620" width="300" height="64" rx="32" fill="none" stroke="#f2f4f3" stroke-width="2"/><text x="480" y="661" fill="#f2f4f3">FZ · CB150</text>
+    <rect x="760" y="620" width="300" height="64" rx="32" fill="none" stroke="#f2f4f3" stroke-width="2"/><text x="800" y="661" fill="#f2f4f3">ALERTS LIVE</text>
+  </g>
+</svg>

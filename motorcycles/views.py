@@ -1,22 +1,23 @@
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, DetailView
 from django.urls import reverse_lazy
 from .models import Motorcycle
 from inventory.models import SparePart
 from maintenance.models import generate_predictions
 
-class BikeList(ListView):
+class BikeList(LoginRequiredMixin, ListView):
     model = Motorcycle
     template_name = 'motorcycles/list.html'
     context_object_name = 'bikes'
 
-class BikeCreate(CreateView):
+class BikeCreate(LoginRequiredMixin, CreateView):
     model = Motorcycle
     fields = ['customer', 'brand', 'model', 'year', 'plate_no', 'mileage']
     template_name = 'motorcycles/form.html'
     success_url = reverse_lazy('bike-list')
 
-class BikeDetail(DetailView):
+class BikeDetail(LoginRequiredMixin, DetailView):
     model = Motorcycle
     template_name = 'motorcycles/detail.html'
     context_object_name = 'bike'
